@@ -1,0 +1,8 @@
+# Default owners for repository review.
+* @omurilomota
+
+# Sensitive areas
+/backend/src/main/java/com/lifeos/shared/security/ @omurilomota
+/backend/src/main/java/com/lifeos/identity/ @omurilomota
+/docs/architecture/security.md @omurilomota
+/.github/workflows/ @omurilomota

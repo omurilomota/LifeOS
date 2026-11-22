@@ -205,7 +205,7 @@ cd frontend && npm run build
 
 ## Contribuindo
 
-Contribuições são bem-vindas. O projeto já tem licença, CI, templates, labels e issues de longo prazo para onboarding.
+Contribuições são bem-vindas. O projeto já tem licença, CI, CodeQL, Dependabot, templates, CODEOWNERS, labels e issues de longo prazo para onboarding.
 
 1. Leia [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) e [`SECURITY.md`](SECURITY.md).
 2. Pegue uma issue: [good first issue](https://github.com/omurilomota/LifeOS/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) ou [help wanted](https://github.com/omurilomota/LifeOS/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22).
