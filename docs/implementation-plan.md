@@ -2,7 +2,7 @@
 
 ## Status
 - **Plan type**: Implementation-ready master plan for a new product in an empty workspace.
-- **Workspace**: `/home/murilo/Documents/LifeOS` bootstrapped on 2026-11-21 (was empty; no git repo initialized).
+- **Workspace**: LifeOS repository bootstrapped on 2026-11-21.
 - **Toolchain verified (2026-11-21)**: Java 21.0.13.1, javac 21.0.13.1, Maven 3.9.12, Node v24.20.0, npm 12.2.2, Docker 29.10.0, Docker Compose v5.8.0.
 - **Current implementation status**: Phase 0-7 baseline+upgrades completed; pending-gap pass added reminder delivery scheduler, rate limiting/security headers, LGPD export/delete baseline, settings privacy UI, and tests. Backend+frontend tests/builds passing. Docker Postgres runtime smoke blocked in this environment (no docker socket).
 - **Direction**: Start with **Phase 1 foundation first** (executable base), then deliver MVP through Phases 2–4 in incremental vertical slices. Do not start with AI. Do not build disconnected modules.

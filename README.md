@@ -80,6 +80,14 @@ cd frontend && npm run typecheck
 - Testing: `docs/development/testing.md`
 - API conventions: `docs/api/api-conventions.md`
 
+## Contributing
+
+Contributions are welcome. Read [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), and [`SECURITY.md`](SECURITY.md) before opening issues or pull requests.
+
+## License
+
+[GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0). This license requires that modified versions made available over a network provide corresponding source to users of that service, helping protect the project from proprietary closed-source reuse.
+
 ## Principles
 
 - User data belongs to the user; no ads, no private-data training.
