@@ -8,6 +8,7 @@ import com.lifeos.obligation.domain.ObligationStatus;
 import com.lifeos.obligation.infra.ObligationRepository;
 import com.lifeos.reminder.domain.Reminder;
 import com.lifeos.reminder.infra.ReminderRepository;
+import com.lifeos.shared.observability.LifeOsMetrics;
 import com.lifeos.shared.time.TimeProvider;
 import java.time.Instant;
 import java.util.List;
@@ -27,15 +28,17 @@ public class ReminderDeliveryService {
     private final NotificationRepository notificationRepository;
     private final HouseholdMembershipRepository membershipRepository;
     private final TimeProvider timeProvider;
+    private final LifeOsMetrics metrics;
 
     public ReminderDeliveryService(ReminderRepository reminderRepository, ObligationRepository obligationRepository,
                                    NotificationRepository notificationRepository, HouseholdMembershipRepository membershipRepository,
-                                   TimeProvider timeProvider) {
+                                   TimeProvider timeProvider, LifeOsMetrics metrics) {
         this.reminderRepository = reminderRepository;
         this.obligationRepository = obligationRepository;
         this.notificationRepository = notificationRepository;
         this.membershipRepository = membershipRepository;
         this.timeProvider = timeProvider;
+        this.metrics = metrics;
     }
 
     @Scheduled(fixedDelayString = "${lifeos.reminders.poll-ms:60000}")
@@ -55,6 +58,7 @@ public class ReminderDeliveryService {
             reminder.setStatus("CANCELLED");
             reminder.setDeliveredAt(now);
             reminderRepository.save(reminder);
+            metrics.reminder("cancelled");
             return;
         }
         membershipRepository.findByHouseholdId(obligation.getHouseholdId()).forEach(member -> {
@@ -64,10 +68,13 @@ public class ReminderDeliveryService {
                 notificationRepository.save(new Notification(UUID.randomUUID(), obligation.getHouseholdId(), member.getUserId(),
                         "REMINDER_DUE", "Lembrete: " + obligation.getTitle(),
                         "A obrigação vence em " + obligation.getDueAt(), "OBLIGATION", obligation.getId(), now));
+            } else {
+                metrics.reminder("deduplicated");
             }
         });
         reminder.setStatus("DELIVERED");
         reminder.setDeliveredAt(now);
         reminderRepository.save(reminder);
+        metrics.reminder("delivered");
     }
 }

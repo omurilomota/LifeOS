@@ -19,6 +19,7 @@ import com.lifeos.record.application.RecordService;
 import com.lifeos.record.domain.RecordStatus;
 import com.lifeos.record.domain.RecordType;
 import com.lifeos.shared.error.ApiException;
+import com.lifeos.shared.observability.LifeOsMetrics;
 import com.lifeos.shared.time.TimeProvider;
 import java.time.Instant;
 import java.util.List;
@@ -43,11 +44,13 @@ public class AiSuggestionService {
     private final AuditService auditService;
     private final TimeProvider timeProvider;
     private final ObjectMapper objectMapper;
+    private final LifeOsMetrics metrics;
 
     public AiSuggestionService(AiProperties properties, AiSuggestionRepository suggestionRepository,
                                DocumentRepository documentRepository, HouseholdMembershipRepository membershipRepository,
                                RecordService recordService, ObligationService obligationService,
-                               AuditService auditService, TimeProvider timeProvider, ObjectMapper objectMapper) {
+                               AuditService auditService, TimeProvider timeProvider, ObjectMapper objectMapper,
+                               LifeOsMetrics metrics) {
         this.properties = properties;
         this.suggestionRepository = suggestionRepository;
         this.documentRepository = documentRepository;
@@ -57,6 +60,7 @@ public class AiSuggestionService {
         this.auditService = auditService;
         this.timeProvider = timeProvider;
         this.objectMapper = objectMapper;
+        this.metrics = metrics;
     }
 
     @Transactional(readOnly = true)
@@ -147,6 +151,7 @@ public class AiSuggestionService {
         s.setConfirmedAt(timeProvider.now());
         suggestionRepository.save(s);
         auditService.record(m.getHouseholdId(), userId, ENTITY, s.getId(), "AI_SUGGESTION_CONFIRMED", Map.of("createdEntityType", entityType, "createdEntityId", createdId.toString()));
+        metrics.aiReview("confirmed");
         return new AiSuggestionDtos.ConfirmResponse(s.getId(), s.getStatus(), createdId, entityType);
     }
 
@@ -160,6 +165,7 @@ public class AiSuggestionService {
             s.setRejectedAt(timeProvider.now());
             suggestionRepository.save(s);
             auditService.record(m.getHouseholdId(), userId, ENTITY, s.getId(), "AI_SUGGESTION_REJECTED", Map.of("documentId", s.getDocumentId().toString()));
+            metrics.aiReview("rejected");
         }
         return toResponse(s);
     }
