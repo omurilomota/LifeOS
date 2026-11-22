@@ -18,7 +18,7 @@ mvn test
 
 - Component/form validation tests.
 - API client/error handling tests.
-- Critical flow smoke/E2E later (Playwright) for MVP gate.
+- Critical flow E2E smoke with Playwright (MVP gate) — see below.
 
 Run:
 
@@ -30,18 +30,27 @@ npm run test
 npm run build
 ```
 
-## Required MVP E2E flow
+## E2E smoke (MVP gate) — Playwright
 
-Before claiming MVP complete, automate:
+The required core flow is automated in `frontend/e2e/core-flow.spec.ts`. It uses **demo mode** (`Entrar sem conta (demo)`) so every run gets an isolated user/household, and covers:
 
-1. Register/login
-2. Create record
-3. Upload document
-4. Link document to record
-5. Create obligation
-6. See dashboard/today
-7. Search finds record/document
-8. Complete obligation
+1. Enter the app (demo mode)
+2. Create a record and open its detail/history
+3. Upload a `.txt` document and wait for Tika extraction (`READY`)
+4. Link the document to the created record
+5. Create an overdue obligation (priority `HIGH`, no recurrence)
+6. Verify dashboard: overdue obligation, recent record and generated notification
+7. Global search finds the created record
+8. Complete the obligation and confirm `COMPLETED`
+
+`playwright.config.ts` starts the backend (`mvn spring-boot:run -Dspring-boot.run.profiles=local`) and the Vite dev server automatically, and reuses them when already running locally. It requires a reachable PostgreSQL on `localhost:5432` with the `.env.example` defaults; start it with:
+
+```bash
+docker compose up -d postgres
+cd frontend && npm run test:e2e
+```
+
+Use `npx playwright install chromium` once after installing dependencies. Locally, reports/traces are written to `frontend/playwright-report/` and `frontend/test-results/` (gitignored). This gate is also executed in CI (`.github/workflows/ci.yml`, job `e2e`) with a PostgreSQL service container.
 
 Track this in [issue #1](https://github.com/omurilomota/LifeOS/issues/1).
 
@@ -54,4 +63,4 @@ Track this in [issue #1](https://github.com/omurilomota/LifeOS/issues/1).
 
 ## CI
 
-GitHub Actions runs backend tests and frontend typecheck/lint/test/build on pushes and PRs to `main`/`develop` (`.github/workflows/ci.yml`).
+GitHub Actions runs backend tests, frontend typecheck/lint/test/build and the E2E smoke gate on pushes and PRs to `main`/`develop` (`.github/workflows/ci.yml`).

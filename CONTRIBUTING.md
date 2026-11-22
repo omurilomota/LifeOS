@@ -26,6 +26,8 @@ cd frontend && npm run typecheck && npm run lint && npm run test && npm run buil
 
 5. Open a pull request to `develop` with a clear description, test evidence, and security/privacy impact.
 
+> `main` and `develop` are protected branches: direct pushes, force pushes and deletions are blocked (including for admins). Every change must go through a PR with 1 approving review from a code owner, all conversations resolved, and the `backend`, `frontend` and `e2e` CI checks passing on an up-to-date branch. The E2E check needs Docker/PostgreSQL locally when reproducing it outside CI (see [`docs/development/testing.md`](docs/development/testing.md)).
+
 ## Pull request expectations
 
 - Keep PRs focused; avoid unrelated refactors.

@@ -3,8 +3,9 @@
 ## Status
 - **Plan type**: Implementation-ready master plan for a new product in an empty workspace.
 - **Workspace**: LifeOS repository bootstrapped on 2026-11-21.
-- **Toolchain verified (2026-11-21)**: Java 21.0.13.1, javac 21.0.13.1, Maven 3.9.12, Node v24.20.0, npm 12.2.2, Docker 29.10.0, Docker Compose v5.8.0.
-- **Current implementation status**: Phase 0-7 baseline+upgrades completed; pending-gap pass added reminder delivery scheduler, rate limiting/security headers, LGPD export/delete baseline, settings privacy UI, and tests. Backend+frontend tests/builds passing. Docker Postgres runtime smoke blocked in this environment (no docker socket).
+- **Toolchain verified (2026-11-22)**: Java 21.0.13.1 (Temurin LTS), Maven 3.9.8, Node v24.14.0, npm 11.9.0, Docker 29.2.1 with daemon running and Compose v2.
+- **Current implementation status**: Phase 0-7 baseline+upgrades completed; pending-gap pass added reminder delivery scheduler, rate limiting/security headers, LGPD export/delete baseline, settings privacy UI, and tests. Backend+frontend tests/builds passing. Required MVP E2E gate implemented with Playwright and passing locally against real PostgreSQL; wired into CI.
+- **Branch protection (2026-11-22)**: `main` and `develop` require PR + 1 code-owner approval, resolved conversations, up-to-date branches and passing `backend`/`frontend`/`e2e` checks; force pushes/deletions blocked even for admins.
 - **Direction**: Start with **Phase 1 foundation first** (executable base), then deliver MVP through Phases 2–4 in incremental vertical slices. Do not start with AI. Do not build disconnected modules.
 
 ## Execution Log
@@ -22,16 +23,17 @@
 | 2026-11-21 | Phase 6 - Household Collaboration | Completed (baseline) | Added invitation/member detail endpoints, invite create/revoke/accept flow, role checks, household-scoped member listing, audit events. Frontend Household page for members, invite, accept token, revoke. Backend+frontend tests/builds passing. |
 | 2026-11-21 | Phase 7 - Upgrades | Completed (baseline) | Added Tika MIME detection/text extraction, obligation reschedule endpoint/UI, recurrence rules (DAILY/WEEKLY/MONTHLY/YEARLY) with next-occurrence creation on complete, household owner role update/remove member endpoints/UI, PWA manifest/meta, prod profile, deployment/security/mvp docs. Full backend+frontend verification passing. |
 | 2026-11-21 | Pending gap pass | Completed (baseline) | Added in-process reminder delivery scheduler (`@Scheduled`), notification dedupe/read-all, rate limiting filter + security headers, LGPD export/delete endpoints and Settings UI, obligation upgrade/privacy integration tests. Full backend+frontend verification passing. |
+| 2026-11-22 | Issue #1 - MVP E2E gate | Completed | Added Playwright (`@playwright/test`, `test:e2e`, `playwright.config.ts`) and `frontend/e2e/core-flow.spec.ts` covering demo entry -> record + history -> document upload/extraction -> record link -> obligation -> dashboard/notifications -> global search -> completion. Verified against real PostgreSQL 16 in Docker: `mvn test` (18 tests), frontend typecheck/lint/test/build and E2E (1/1) all green. Added CI `e2e` job with Postgres service. Replaced local JDK 26 with Temurin 21 to match the declared toolchain. |
 
 ## Known Limitations / Blockers
 
-- Docker daemon unavailable in runtime (`/var/run/docker.sock` missing); Postgres container/startup smoke not executed here.
+- Docker daemon is required to run the E2E gate locally; it is started via `docker desktop start` on this workstation (previously unavailable). CI uses a PostgreSQL service container instead.
 - Password reset/invitation email delivery not configured; tokens are manual/dev baseline.
 - Reminder delivery is in-process poll scheduler; production should use durable queue/worker.
 - Rate limiting is in-memory single-node baseline; no distributed limiter/AV/dependency scanning CI wired.
 - LGPD baseline includes export/delete; correction workflow, retention/backup/restore drills, and formal compliance review pending.
-- Required MVP E2E gate and external security audit not executed.
-- Workspace is not a git repository; no commits created.
+- Required MVP E2E gate is executed and green locally and in CI; external security audit still pending.
+- Work is done on branch `test/e2e-core-flow` cloned from `origin/develop`; no commits pushed yet.
 
 ## Product Definition
 
@@ -356,7 +358,7 @@ LifeOS/
 
 ### MVP DoD (before claiming MVP)
 - Auth + personal household + records + documents/inbox + obligations + Today dashboard + global search + history all work end-to-end.
-- Priority E2E passes: create user -> create personal space -> upload test doc -> process doc -> review info -> create record -> link doc -> create obligation -> create notification -> see dashboard -> search record -> consult history.
+- Priority E2E passes: demo entry -> create record + consult history -> upload/process doc -> link doc -> create obligation -> notification -> dashboard -> global search -> complete obligation. Automated in `frontend/e2e/core-flow.spec.ts` and green locally + in CI (2026-11-22).
 - Security checks pass for cross-household access, unauthorized download, invite misuse, CSRF/session, MIME spoofing/oversize upload.
 - Docs current: setup, testing, architecture, ADRs, known limitations, implementation status.
 

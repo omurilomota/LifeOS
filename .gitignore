@@ -28,3 +28,6 @@ docker-data/
 # Test / reports
 **/surefire-reports/
 **/failsafe-reports/
+frontend/playwright-report/
+frontend/test-results/
+frontend/blob-report/
