@@ -7,6 +7,7 @@ export type ApiError = {
 }
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api/v1'
+let csrfToken: string | undefined
 
 function getCookie(name: string): string | undefined {
   const value = `; ${document.cookie}`
@@ -15,15 +16,21 @@ function getCookie(name: string): string | undefined {
   return undefined
 }
 
+function captureCsrf(res: Response) {
+  const token = res.headers.get('X-XSRF-TOKEN')
+  if (token) csrfToken = token
+}
+
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const method = (options.method ?? 'GET').toUpperCase()
   const headers = new Headers(options.headers)
   if (!headers.has('Content-Type') && options.body) headers.set('Content-Type', 'application/json')
   if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
-    let csrf = getCookie('XSRF-TOKEN')
+    let csrf = csrfToken ?? getCookie('XSRF-TOKEN')
     if (!csrf) {
-      await fetch(`${API_BASE}/auth/me`, { credentials: 'include' }).catch(() => undefined)
-      csrf = getCookie('XSRF-TOKEN')
+      const pre = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' }).catch(() => undefined)
+      if (pre) captureCsrf(pre)
+      csrf = csrfToken ?? getCookie('XSRF-TOKEN')
     }
     if (csrf) headers.set('X-XSRF-TOKEN', decodeURIComponent(csrf))
   }
@@ -33,6 +40,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
     ...options,
     headers,
   })
+  captureCsrf(res)
 
   if (res.status === 204) return undefined as T
   const text = await res.text()
