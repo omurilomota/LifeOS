@@ -20,7 +20,11 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   const headers = new Headers(options.headers)
   if (!headers.has('Content-Type') && options.body) headers.set('Content-Type', 'application/json')
   if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
-    const csrf = getCookie('XSRF-TOKEN')
+    let csrf = getCookie('XSRF-TOKEN')
+    if (!csrf) {
+      await fetch(`${API_BASE}/auth/me`, { credentials: 'include' }).catch(() => undefined)
+      csrf = getCookie('XSRF-TOKEN')
+    }
     if (csrf) headers.set('X-XSRF-TOKEN', decodeURIComponent(csrf))
   }
 
