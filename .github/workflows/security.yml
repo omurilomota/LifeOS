@@ -1,0 +1,71 @@
+name: Security
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '23 4 * * 1'
+
+jobs:
+  # Reviews dependency changes introduced by a PR (Maven + npm manifests).
+  # Existing baseline findings are handled by Dependabot, not by this gate.
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  # Scheduled/push audit of production npm dependencies. Runs outside PRs so
+  # a pre-existing advisory never blocks an unrelated pull request.
+  npm-audit:
+    name: npm audit (production)
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm audit --omit=dev --audit-level=high
+
+  # Dockerfile best-practices + built image vulnerability scan.
+  container-scan:
+    name: Container scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dockerfile misconfiguration scan
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0 (CVE-2026-33634 safe)
+        with:
+          scan-type: config
+          scan-ref: backend/Dockerfile
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+      - name: Build backend image
+        run: docker build -t lifeos-backend:ci ./backend
+      - name: Image vulnerability scan
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0 (CVE-2026-33634 safe)
+        with:
+          scan-type: image
+          image-ref: lifeos-backend:ci
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
