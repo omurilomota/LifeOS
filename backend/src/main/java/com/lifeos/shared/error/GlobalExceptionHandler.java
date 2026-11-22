@@ -1,5 +1,6 @@
 package com.lifeos.shared.error;
 
+import com.lifeos.shared.observability.ErrorReporter;
 import com.lifeos.shared.time.TimeProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -20,9 +22,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     private final TimeProvider timeProvider;
+    private final ErrorReporter errorReporter;
 
-    public GlobalExceptionHandler(TimeProvider timeProvider) {
+    public GlobalExceptionHandler(TimeProvider timeProvider, ErrorReporter errorReporter) {
         this.timeProvider = timeProvider;
+        this.errorReporter = errorReporter;
     }
 
     @ExceptionHandler(ApiException.class)
@@ -68,11 +72,16 @@ public class GlobalExceptionHandler {
     private ResponseEntity<ApiError> build(HttpStatus status, String code, String message,
                                            List<ApiError.ApiErrorDetail> details,
                                            HttpServletRequest request, Exception ex, boolean logStack) {
-        String traceId = UUID.randomUUID().toString();
+        String traceId = MDC.get("traceId");
+        if (traceId == null || traceId.isBlank()) traceId = UUID.randomUUID().toString();
+        String requestId = MDC.get("requestId");
+        String path = request.getRequestURI();
         if (logStack) {
-            log.error("traceId={} path={} code={}", traceId, request.getRequestURI(), code, ex);
+            log.error("traceId={} requestId={} path={} code={} status={}", traceId, requestId, path, code,
+                    status.value(), ex);
+            errorReporter.report(ex, code, path, traceId, requestId);
         } else {
-            log.warn("traceId={} path={} code={} message={}", traceId, request.getRequestURI(), code, ex.getMessage());
+            log.warn("traceId={} requestId={} path={} code={} status={}", traceId, requestId, path, code, status.value());
         }
         ApiError body = new ApiError(code, message, details, traceId, timeProvider.now());
         return ResponseEntity.status(status).body(body);

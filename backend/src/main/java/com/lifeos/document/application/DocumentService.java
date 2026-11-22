@@ -14,6 +14,7 @@ import com.lifeos.household.domain.HouseholdRole;
 import com.lifeos.household.infra.HouseholdMembershipRepository;
 import com.lifeos.record.infra.RecordRepository;
 import com.lifeos.shared.error.ApiException;
+import com.lifeos.shared.observability.LifeOsMetrics;
 import com.lifeos.shared.storage.FileTypeDetector;
 import com.lifeos.shared.storage.StorageService;
 import com.lifeos.shared.time.TimeProvider;
@@ -52,11 +53,13 @@ public class DocumentService {
     private final FileTypeDetector fileTypeDetector;
     private final AuditService auditService;
     private final TimeProvider timeProvider;
+    private final LifeOsMetrics metrics;
 
     public DocumentService(DocumentRepository documentRepository, RecordDocumentRepository recordDocumentRepository,
                            ExtractionJobRepository extractionJobRepository, HouseholdMembershipRepository membershipRepository,
                            RecordRepository recordRepository, StorageService storageService,
-                           FileTypeDetector fileTypeDetector, AuditService auditService, TimeProvider timeProvider) {
+                           FileTypeDetector fileTypeDetector, AuditService auditService, TimeProvider timeProvider,
+                           LifeOsMetrics metrics) {
         this.documentRepository = documentRepository;
         this.recordDocumentRepository = recordDocumentRepository;
         this.extractionJobRepository = extractionJobRepository;
@@ -66,6 +69,7 @@ public class DocumentService {
         this.fileTypeDetector = fileTypeDetector;
         this.auditService = auditService;
         this.timeProvider = timeProvider;
+        this.metrics = metrics;
     }
 
     @Transactional(readOnly = true)
@@ -80,12 +84,19 @@ public class DocumentService {
     @Transactional
     public DocumentDtos.DocumentResponse upload(UUID userId, MultipartFile file) {
         HouseholdMembership membership = requireWritableMembership(userId);
-        if (file == null || file.isEmpty()) throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_FILE", "File is required");
-        if (file.getSize() > MAX_SIZE) throw new ApiException(HttpStatus.BAD_REQUEST, "FILE_TOO_LARGE", "File exceeds max size");
+        if (file == null || file.isEmpty()) {
+            metrics.documentUpload("rejected");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_FILE", "File is required");
+        }
+        if (file.getSize() > MAX_SIZE) {
+            metrics.documentUpload("rejected");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "FILE_TOO_LARGE", "File exceeds max size");
+        }
 
         String originalFilename = sanitizeFilename(file.getOriginalFilename());
         String detectedMime = detectMime(file, originalFilename);
         if (!ALLOWED_MIME.contains(detectedMime)) {
+            metrics.documentUpload("rejected");
             throw new ApiException(HttpStatus.BAD_REQUEST, "UNSUPPORTED_FILE_TYPE", "File type is not supported");
         }
 
@@ -99,6 +110,7 @@ public class DocumentService {
             storedSize = stored.sizeBytes();
             checksum = HexFormat.of().formatHex(din.getMessageDigest().digest());
         } catch (IOException e) {
+            metrics.documentUpload("storage_error");
             throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "STORAGE_ERROR", "Failed to store file");
         }
 
@@ -114,6 +126,7 @@ public class DocumentService {
 
         auditService.record(membership.getHouseholdId(), userId, ENTITY_TYPE, docId, "DOCUMENT_UPLOADED",
                 java.util.Map.of("filename", originalFilename, "mimeType", detectedMime));
+        metrics.documentUpload("stored");
         return toResponse(document);
     }
 

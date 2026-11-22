@@ -10,6 +10,7 @@ import com.lifeos.identity.domain.User;
 import com.lifeos.identity.infra.PasswordResetTokenRepository;
 import com.lifeos.identity.infra.UserRepository;
 import com.lifeos.shared.error.ApiException;
+import com.lifeos.shared.observability.LifeOsMetrics;
 import com.lifeos.shared.time.TimeProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -44,17 +45,19 @@ public class AuthService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final TimeProvider timeProvider;
+    private final LifeOsMetrics metrics;
 
     public AuthService(UserRepository userRepository, HouseholdRepository householdRepository,
                        HouseholdMembershipRepository membershipRepository,
                        PasswordResetTokenRepository passwordResetTokenRepository,
-                       PasswordEncoder passwordEncoder, TimeProvider timeProvider) {
+                       PasswordEncoder passwordEncoder, TimeProvider timeProvider, LifeOsMetrics metrics) {
         this.userRepository = userRepository;
         this.householdRepository = householdRepository;
         this.membershipRepository = membershipRepository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.timeProvider = timeProvider;
+        this.metrics = metrics;
     }
 
     @Transactional
@@ -101,9 +104,12 @@ public class AuthService {
     @Transactional(readOnly = true)
     public AuthDtos.AuthResponse login(AuthDtos.LoginRequest request, HttpServletRequest httpRequest) {
         String email = normalizeEmail(request.email());
-        User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Invalid email or password"));
+        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow(() -> {
+            metrics.authFailure("unknown_email");
+            return new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Invalid email or password");
+        });
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            metrics.authFailure("bad_password");
             throw new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Invalid email or password");
         }
         authenticate(user, httpRequest);
