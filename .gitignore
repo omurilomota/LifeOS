@@ -23,6 +23,7 @@ frontend/coverage/
 
 # Docker / local
 docker-data/
+backups/
 *.pid
 
 # Test / reports
