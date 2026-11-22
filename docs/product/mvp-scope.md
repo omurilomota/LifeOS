@@ -15,4 +15,4 @@
 - Email delivery for password reset/invitations; production notification channels.
 - Distributed rate limiting, AV scanning, dependency/container scanning CI, secret-manager wiring.
 - Full LGPD operational flows: correction workflow, retention policy docs, backup/restore drills.
-- Required E2E gate and production hardening/security audit.
+- Production hardening and external security audit. The required MVP E2E gate is implemented and green (`frontend/e2e/core-flow.spec.ts`, CI job `e2e`).
