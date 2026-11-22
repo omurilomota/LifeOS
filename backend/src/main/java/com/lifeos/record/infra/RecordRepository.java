@@ -18,9 +18,9 @@ public interface RecordRepository extends JpaRepository<RecordEntity, UUID> {
             where r.householdId = :householdId
               and (:status is null or r.status = :status)
               and (:type is null or r.type = :type)
-              and (:q is null or lower(r.title) like lower(concat('%', :q, '%'))
-                   or lower(coalesce(r.description, '')) like lower(concat('%', :q, '%'))
-                   or lower(coalesce(r.category, '')) like lower(concat('%', :q, '%')))
+              and (:q is null or lower(r.title) like lower(concat('%', cast(:q as string), '%'))
+                   or lower(coalesce(r.description, '')) like lower(concat('%', cast(:q as string), '%'))
+                   or lower(coalesce(r.category, '')) like lower(concat('%', cast(:q as string), '%')))
             order by r.updatedAt desc
             """)
     List<RecordEntity> search(@Param("householdId") UUID householdId,
