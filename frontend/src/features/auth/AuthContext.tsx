@@ -32,6 +32,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async register(displayName, email, password) {
       setAuth(await authApi.register({ displayName, email, password }))
     },
+    async demo() {
+      setAuth(await authApi.demo())
+    },
     async logout() {
       await authApi.logout()
       setAuth(null)

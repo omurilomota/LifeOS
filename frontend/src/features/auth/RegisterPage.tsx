@@ -4,7 +4,7 @@ import { useAuth } from './useAuth'
 import type { ApiError } from '@/shared/api/client'
 
 export function RegisterPage() {
-  const { register } = useAuth()
+  const { register, demo } = useAuth()
   const navigate = useNavigate()
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
@@ -50,6 +50,14 @@ export function RegisterPage() {
           {error && <p className="text-sm text-danger" role="alert">{error}</p>}
           <button disabled={submitting} className="w-full rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60">
             {submitting ? 'Criando...' : 'Criar conta'}
+          </button>
+          <button type="button" disabled={submitting} className="w-full rounded-lg border border-line px-4 py-2.5 text-sm font-medium text-ink disabled:opacity-60" onClick={async () => {
+            setError(null); setSubmitting(true)
+            try { await demo(); navigate('/') }
+            catch (err: unknown) { const apiErr = err as ApiError; setError(apiErr?.message ?? 'Falha ao entrar no modo demo') }
+            finally { setSubmitting(false) }
+          }}>
+            Entrar sem conta (demo)
           </button>
         </form>
         <p className="mt-4 text-sm text-muted">

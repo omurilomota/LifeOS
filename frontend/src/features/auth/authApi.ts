@@ -9,6 +9,10 @@ export function register(payload: {
   return api<AuthResponse>('/auth/register', { method: 'POST', body: JSON.stringify(payload) })
 }
 
+export function demo() {
+  return api<AuthResponse>('/auth/demo', { method: 'POST' })
+}
+
 export function login(payload: { email: string; password: string }) {
   return api<AuthResponse>('/auth/login', { method: 'POST', body: JSON.stringify(payload) })
 }

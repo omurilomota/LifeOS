@@ -30,6 +30,12 @@ public class AuthController {
         return authService.register(request, httpRequest);
     }
 
+    @PostMapping("/demo")
+    @ResponseStatus(HttpStatus.CREATED)
+    public AuthDtos.AuthResponse demo(HttpServletRequest httpRequest) {
+        return authService.demo(httpRequest);
+    }
+
     @PostMapping("/login")
     public AuthDtos.AuthResponse login(@Valid @RequestBody AuthDtos.LoginRequest request, HttpServletRequest httpRequest) {
         return authService.login(request, httpRequest);

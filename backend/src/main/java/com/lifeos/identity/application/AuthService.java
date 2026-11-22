@@ -79,6 +79,25 @@ public class AuthService {
         return toAuthResponse(user, household, HouseholdRole.OWNER);
     }
 
+    @Transactional
+    public AuthDtos.AuthResponse demo(HttpServletRequest httpRequest) {
+        String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        String email = "demo-" + suffix + "@demo.lifeos.local";
+        String displayName = "Demo " + suffix.substring(0, 6);
+        String password = UUID.randomUUID().toString() + UUID.randomUUID();
+        User user = new User(email, passwordEncoder.encode(password), displayName, "pt-BR", "America/Sao_Paulo");
+        userRepository.save(user);
+
+        Instant now = timeProvider.now();
+        Household household = new Household(defaultHouseholdName(user.getDisplayName()), user.getId());
+        householdRepository.save(household);
+        HouseholdMembership membership = new HouseholdMembership(household.getId(), user.getId(), HouseholdRole.OWNER, now);
+        membershipRepository.save(membership);
+
+        authenticate(user, httpRequest);
+        return toAuthResponse(user, household, HouseholdRole.OWNER);
+    }
+
     @Transactional(readOnly = true)
     public AuthDtos.AuthResponse login(AuthDtos.LoginRequest request, HttpServletRequest httpRequest) {
         String email = normalizeEmail(request.email());
