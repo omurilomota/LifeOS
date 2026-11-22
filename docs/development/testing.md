@@ -1,40 +1,57 @@
 # Testing
 
-## Backend
+## Backend (JUnit 5 + Spring Boot Test)
+
+- **Unit tests**: services/domain logic, DTO validation rules, permission decisions.
+- **Integration tests**: MockMvc/WebTestClient + Testcontainers PostgreSQL for auth, household scoping, CRUD, upload/download authorization.
+- **Security tests**: IDOR/cross-household access, CSRF/session behavior, file upload validation.
+- **Migrations**: Flyway runs in integration tests against PostgreSQL.
+
+Run:
 
 ```bash
 cd backend
 mvn test
 ```
 
-Planned/implemented test layers:
+## Frontend (Vitest + Testing Library)
 
-- Unit tests (JUnit 5)
-- Spring Boot integration tests
-- Security/authorization tests (IDOR, household isolation, CSRF/session)
-- Time-controlled tests for scheduling/recurrence (Phase 4)
+- Component/form validation tests.
+- API client/error handling tests.
+- Critical flow smoke/E2E later (Playwright) for MVP gate.
 
-## Frontend
+Run:
 
 ```bash
 cd frontend
-npm run test
 npm run typecheck
 npm run lint
+npm run test
+npm run build
 ```
 
-## E2E (MVP gate)
+## Required MVP E2E flow
 
-Before claiming MVP, the priority flow must pass:
+Before claiming MVP complete, automate:
 
-1. Create user
-2. Create personal space
-3. Upload test document
-4. Process/review document
-5. Create record
-6. Link document
-7. Create obligation
-8. Create/receive notification
-9. View dashboard
-10. Search record
-11. Consult history
+1. Register/login
+2. Create record
+3. Upload document
+4. Link document to record
+5. Create obligation
+6. See dashboard/today
+7. Search finds record/document
+8. Complete obligation
+
+Track this in [issue #1](https://github.com/omurilomota/LifeOS/issues/1).
+
+## Manual smoke (current)
+
+- Start Postgres, backend, frontend.
+- Register or use **"Entrar sem conta (demo)"** for quick local/public smoke.
+- Verify `/api/v1/health`, auth session, dashboard, record/document/obligation flows.
+- Confirm CORS/CSRF work when frontend and backend are on different origins.
+
+## CI
+
+GitHub Actions runs backend tests and frontend typecheck/lint/test/build on pushes and PRs to `main`/`develop` (`.github/workflows/ci.yml`).

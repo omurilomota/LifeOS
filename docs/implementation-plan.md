@@ -12,7 +12,7 @@
 | Date | Phase | Status | Notes |
 |---|---|---|---|
 | 2026-11-21 | Phase 0 - Bootstrap | Completed | Monorepo skeleton, docs, AGENTS/README/.env.example, Docker Compose, ADR 0001. |
-| 2026-11-21 | Phase 1 - Backend foundation | Completed (baseline) | Spring Boot 3.3.5/Java 21, Flyway, session+CSRF, Argon2id, register/login/logout/me, password reset request/confirm (token persisted; manual/dev delivery), personal household auto-create, current household endpoint, health, error envelope. `mvn test` passed. |
+| 2026-11-21 | Phase 1 - Backend foundation | Completed (baseline) | Spring Boot/Java 21, Flyway, session+CSRF, Argon2id, register/login/logout/me, password reset request/confirm (token persisted; manual/dev delivery), personal household auto-create, current household endpoint, health, error envelope. `mvn test` passed. Later upgraded to Spring Boot 4.1.2. |
 | 2026-11-21 | Phase 1 - Frontend foundation | Completed (baseline) | Vite React TS Tailwind app shell, auth context, login/register, protected routes, responsive nav, Today + placeholder module routes. `npm run typecheck`, `npm run test`, `npm run lint`, `npm run build` passed. |
 | 2026-11-21 | Phase 1 - Local runtime verification | Partial | Docker CLI present but daemon socket unavailable (`/var/run/docker.sock` missing); `docker compose up -d postgres` could not run. |
 | 2026-11-21 | Phase 2 - Records | Completed (baseline) | Added records + relationships migration, record/audit domain/services/controllers, household-scoped CRUD/search/archive, relationships, history endpoint. Frontend records list/create/filter/archive/detail/edit/history/relationship UI. Backend tests + frontend typecheck/lint/test/build passing. |
@@ -361,7 +361,7 @@ LifeOS/
 - Docs current: setup, testing, architecture, ADRs, known limitations, implementation status.
 
 ## Assumptions / Defaults (conservative)
-- **Java 21 LTS + latest stable Spring Boot 3.x** unless local environment requires adjustment; verify during Phase 0.
+- **Java 21 LTS + Spring Boot 4.x** (currently 4.1.2) unless a documented constraint requires adjustment.
 - **Session-cookie auth** for browser-first web app; CSRF enabled. JWT only if later non-browser clients require it.
 - **Page-based pagination** for MVP simplicity.
 - **Postgres FTS + btree/gin indexes**; no external search engine.

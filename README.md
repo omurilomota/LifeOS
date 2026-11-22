@@ -8,12 +8,12 @@ Transforme documentos, informações soltas e responsabilidades em registros con
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)](backend/pom.xml)
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3.5-6DB33F?logo=springboot&logoColor=white)](backend/pom.xml)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1.2-6DB33F?logo=springboot&logoColor=white)](backend/pom.xml)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=111)](frontend/package.json)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](frontend/package.json)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](docker-compose.yml)
 
-[Visão](#-visão) · [Funcionalidades](#-funcionalidades) · [Arquitetura](#-arquitetura) · [Quick start](#-quick-start-local) · [Documentação](#-documentação) · [Contribuir](#-contribuindo)
+[Visão](#-visão) · [Capturas](#-capturas-do-produto) · [Funcionalidades](#-funcionalidades) · [Arquitetura](#-arquitetura) · [Quick start](#-quick-start-local) · [Contribuir](#-contribuindo)
 
 </div>
 
@@ -55,7 +55,7 @@ LifeOS é uma plataforma para administração da vida pessoal/familiar. Em vez d
 
 | Área | O que já existe | Status |
 |---|---|---|
-| **Autenticação** | Registro, login/logout, sessão server-side, `/me`, reset de senha (fluxo baseline/manual), household pessoal automático | Baseline |
+| **Autenticação** | Registro, login/logout, sessão server-side, `/me`, reset de senha (fluxo baseline/manual), household pessoal automático, modo demo sem conta para smoke tests | Baseline |
 | **Household** | Membros, convites, aceite/revogação, papéis `OWNER/ADMIN/MEMBER/VIEWER`, gestão administrativa | Baseline |
 | **Records** | CRUD, listagem, detalhe, arquivo, relacionamentos, histórico, busca | Baseline |
 | **Documentos/Inbox** | Upload, listagem, download autorizado, exclusão, vínculo com record, detecção MIME/Tika, extração de texto | Baseline |
@@ -99,7 +99,7 @@ flowchart LR
 | Camada | Tecnologia |
 |---|---|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, React Router, TanStack Query, React Hook Form, Zod |
-| Backend | Java 21, Spring Boot 3.3.5, Spring Security, Spring Data JPA, Validation, Actuator |
+| Backend | Java 21, Spring Boot 4.1.2, Spring Security, Spring Data JPA, Validation, Actuator |
 | Banco | PostgreSQL 16, Flyway |
 | Docs/Extração | Springdoc OpenAPI, Apache Tika |
 | Testes | JUnit/MockMvc/H2 (backend), Vitest + Testing Library (frontend) |
@@ -109,7 +109,7 @@ flowchart LR
 
 ```text
 LifeOS/
-├── .github/                  # Templates de issue/PR
+├── .github/                  # CI, templates de issue/PR
 ├── backend/                  # API Spring Boot (modular monolith)
 │   └── src/main/java/com/lifeos/
 │       ├── shared/           # segurança, erro, storage, config, time
@@ -165,7 +165,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local
 
 - API: `http://localhost:8080`
 - Health: `http://localhost:8080/api/v1/health`
-- OpenAPI/Swagger (se habilitado no perfil): `/swagger-ui.html`
+- OpenAPI/Swagger: `http://localhost:8080/swagger-ui.html`
 
 ### 4) Rodar frontend
 
@@ -176,6 +176,7 @@ npm run dev
 ```
 
 - App: `http://localhost:5173`
+- Smoke rápido: use **"Entrar sem conta (demo)"** na tela de login/cadastro.
 
 ## Testes e qualidade
 
@@ -204,12 +205,13 @@ cd frontend && npm run build
 
 ## Contribuindo
 
-Contribuições são bem-vindas, especialmente em hardening, testes E2E, acessibilidade, UX e integrações seguras.
+Contribuições são bem-vindas. O projeto já tem licença, CI, templates, labels e issues de longo prazo para onboarding.
 
 1. Leia [`CONTRIBUTING.md`](CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) e [`SECURITY.md`](SECURITY.md).
-2. Crie branch a partir de `develop` (`feature/*`, `fix/*`, `docs/*`, `chore/*`).
-3. Faça commits pequenos (Gitmoji bem-vindo).
-4. Rode testes relevantes e abra PR para `develop`.
+2. Pegue uma issue: [good first issue](https://github.com/omurilomota/LifeOS/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) ou [help wanted](https://github.com/omurilomota/LifeOS/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22).
+3. Crie branch a partir de `develop` (`feature/*`, `fix/*`, `docs/*`, `chore/*`).
+4. Faça commits pequenos (Gitmoji bem-vindo).
+5. Rode testes relevantes e abra PR para `develop`.
 
 ## Segurança
 
