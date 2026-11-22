@@ -81,10 +81,10 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm ci
+        run: npm ci --ignore-scripts
       - name: Install Playwright browser
         working-directory: frontend
-        run: npx playwright install --with-deps chromium
+        run: ./node_modules/.bin/playwright install --with-deps chromium
       - name: E2E smoke (core flow)
         working-directory: frontend
         run: npm run test:e2e
