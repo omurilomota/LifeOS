@@ -20,11 +20,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         CsrfTokenRequestAttributeHandler csrfRequestHandler = new CsrfTokenRequestAttributeHandler();
         csrfRequestHandler.setCsrfRequestAttributeName(null);
+        CookieCsrfTokenRepository csrfRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        csrfRepository.setCookieCustomizer(cookie -> cookie
+                .sameSite(org.springframework.boot.web.server.Cookie.SameSite.valueOf(
+                        System.getenv().getOrDefault("SESSION_COOKIE_SAMESITE", "LAX").toUpperCase()).attributeValue())
+                .secure(Boolean.parseBoolean(System.getenv().getOrDefault("SESSION_COOKIE_SECURE", "false"))));
 
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRepository(csrfRepository)
                         .csrfTokenRequestHandler(csrfRequestHandler)
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))

@@ -11,6 +11,7 @@ server:
     session:
       cookie:
         secure: true
+        same-site: ${SESSION_COOKIE_SAMESITE:none}
 
 logging:
   level:
